@@ -20,15 +20,15 @@
         .chat-wrap { display: flex; flex-direction: column; flex: 1; background: rgba(0,0,0,0.2); border-radius: 12px; overflow: hidden; }
         .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
         .input-wrap { padding: 15px; background: #17212b; display: flex; gap: 10px; }
-        input { background: #242f3d; border: 1px solid #333; padding: 12px; color: white; border-radius: 8px; outline: none; flex: 1; }
-        .action-btn { background: var(--accent); border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        input { background: #242f3d; border: 1px solid #333; padding: 12px; color: white; border-radius: 8px; outline: none; flex: 1; margin-bottom: 5px; }
+        .action-btn { background: var(--accent); border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; color: #000; }
 
-        .bubble { padding: 10px; border-radius: 10px; max-width: 85%; }
+        .bubble { padding: 10px; border-radius: 10px; max-width: 85%; margin-bottom: 5px; }
         .my { align-self: flex-end; background: #2b5278; }
         .other { align-self: flex-start; background: #182533; }
 
         #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; }
-        .auth-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; display: flex; flex-direction: column; gap: 10px; }
+        .auth-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; display: flex; flex-direction: column; }
 
         @media (max-width: 768px) {
             .container { grid-template-columns: 1fr; }
@@ -43,11 +43,14 @@
     <div id="auth-screen">
         <div class="auth-box">
             <h2 style="color:var(--accent); text-align:center;">A BIG FAMILY</h2>
-            <input type="text" id="auth-phone" placeholder="+7 (___) ___ ____">
+            <input type="text" id="auth-phone" placeholder="Номер телефона (+7...)">
             <input type="password" id="auth-pass" placeholder="Пароль">
-            <input type="text" id="auth-nick" placeholder="Никнейм (для новых)">
-            <button class="action-btn" onclick="appLogin()">ВХОД</button>
-            <button class="action-btn" style="background:transparent; color:var(--accent); border:1px solid var(--accent);" onclick="appRegister()">РЕГИСТРАЦИЯ</button>
+            <hr style="width:100%; border:0.5px solid #333; margin: 10px 0;">
+            <p style="font-size: 0.7rem; text-align: center; margin-top: 0;">Ниже только для регистрации:</p>
+            <input type="email" id="auth-email" placeholder="Email">
+            <input type="text" id="auth-nick" placeholder="Никнейм">
+            <button class="action-btn" onclick="appLogin()" style="margin-top:10px;">ВХОД</button>
+            <button class="action-btn" style="background:transparent; color:var(--accent); border:1px solid var(--accent); margin-top:5px;" onclick="appRegister()">РЕГИСТРАЦИЯ</button>
         </div>
     </div>
 
@@ -55,7 +58,7 @@
         <div class="content-area">
             <section id="view-home" class="view-section active">
                 <h2 style="color:var(--accent)">СЛОВО ПАСТЫРЯ</h2>
-                <div id="admin-tools" style="display:none; margin-bottom:15px;">
+                <div id="admin-tools" style="display:none; background: var(--card); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
                     <input type="text" id="pastor-img" placeholder="URL картинки">
                     <input type="text" id="pastor-txt" placeholder="Текст поста">
                     <button class="action-btn" onclick="sendPastorPost()">ОПУБЛИКОВАТЬ</button>
@@ -68,42 +71,38 @@
                 <div class="chat-wrap">
                     <div class="messages" id="forum-msgs"></div>
                     <div class="input-wrap">
-                        <input type="text" id="forum-input" placeholder="Сообщение...">
+                        <input type="text" id="forum-input" placeholder="Написать всем...">
                         <button onclick="sendForum()" class="action-btn">-></button>
                     </div>
                 </div>
             </section>
 
-            <section id="view-anon" class="view-section" style="padding:0;">
-                <div style="display:grid; grid-template-columns: 180px 1fr; height:100%;">
-                    <div style="background:#111; padding:10px; border-right:1px solid #333;">
-                        <input type="text" id="search-nick" placeholder="Ник друга" style="width:85%;">
-                        <div id="contacts" style="margin-top:10px;"></div>
-                    </div>
-                    <div class="chat-wrap" style="margin:0;">
-                        <div class="messages" id="priv-msgs"></div>
-                        <div class="input-wrap">
-                            <input type="text" id="priv-input" placeholder="Личное сообщение...">
-                            <button onclick="sendPrivate()" class="action-btn">-></button>
-                        </div>
-                    </div>
+            <section id="view-anon" class="view-section">
+                <h2>АНОНИМНЫЕ ЧАТЫ</h2>
+                <p style="opacity:0.5">Интеграция с Telegram API...</p>
+                <div style="flex:1; display:flex; align-items:center; justify-content:center; border: 1px dashed #333; border-radius: 15px;">
+                    Здесь будет список ваших контактов
                 </div>
             </section>
 
             <section id="view-profile" class="view-section">
                 <div style="text-align:center; background:var(--card); padding:30px; border-radius:15px;">
-                    <img id="u-avatar" src="" style="width:120px; height:120px; border-radius:50%; object-fit:cover;">
+                    <img id="u-avatar" src="" style="width:120px; height:120px; border-radius:50%; object-fit:cover; border: 2px solid var(--accent);">
                     <h2 id="u-nick"></h2>
+                    <p id="u-email" style="color:var(--accent); margin:0;"></p>
                     <p id="u-phone" style="opacity:0.5;"></p>
-                    <input type="text" id="new-avatar" placeholder="URL новой аватарки">
-                    <button class="action-btn" style="margin-top:10px;" onclick="updateAvatar()">СМЕНИТЬ ФОТО</button>
+                    <input type="text" id="new-avatar" placeholder="URL новой аватарки" style="margin-top:20px;">
+                    <button class="action-btn" style="margin-top:10px; width:100%;" onclick="updateAvatar()">ОБНОВИТЬ ПРОФИЛЬ</button>
                 </div>
             </section>
 
             <section id="view-account" class="view-section">
-                <h2>АККАУНТ</h2>
-                <button class="action-btn" style="background:#e74c3c; width:100%;" onclick="logout()">ВЫЙТИ</button>
-                <button class="action-btn" style="margin-top:10px; width:100%;" onclick="location.reload()">ВОЙТИ В ДРУГОЙ</button>
+                <h2>УПРАВЛЕНИЕ АККАУНТОМ</h2>
+                <div style="background:var(--card); padding:20px; border-radius:10px;">
+                    <p>Активные сессии: 1 (Текущая)</p>
+                    <button class="action-btn" style="background:#e74c3c; width:100%; color:white;" onclick="logout()">ВЫЙТИ</button>
+                    <button class="action-btn" style="margin-top:10px; width:100%;" onclick="location.reload()">ВОЙТИ В ДРУГОЙ</button>
+                </div>
             </section>
         </div>
 
@@ -133,36 +132,55 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        
         let user = JSON.parse(localStorage.getItem('user'));
 
         if(user) { loginSuccess(user); }
 
+        // РЕГИСТРАЦИЯ (ТЕЛЕФОН + ПАРОЛЬ + ПОЧТА)
         window.appRegister = async () => {
             const p = document.getElementById('auth-phone').value.replace(/\D/g, "");
             const pass = document.getElementById('auth-pass').value;
+            const email = document.getElementById('auth-email').value;
             const nick = document.getElementById('auth-nick').value;
-            if(!p || !pass || !nick) return alert("Заполни все поля");
             
-            await set(ref(db, 'users/' + p), { phone: p, pass: pass, nick: nick, avatar: 'https://via.placeholder.com/150' });
-            alert("Успешно! Теперь нажми Вход");
+            if(!p || !pass || !nick || !email) return alert("Заполни ВСЕ поля для регистрации");
+            
+            await set(ref(db, 'users/' + p), { 
+                phone: p, 
+                pass: pass, 
+                nick: nick, 
+                email: email, 
+                avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' 
+            });
+            alert("Аккаунт создан! Теперь вводи номер и пароль для входа.");
         };
 
+        // ВХОД (ТОЛЬКО НОМЕР И ПАРОЛЬ)
         window.appLogin = async () => {
             const p = document.getElementById('auth-phone').value.replace(/\D/g, "");
             const pass = document.getElementById('auth-pass').value;
+            
             const snap = await get(ref(db, 'users/' + p));
             if(snap.exists() && snap.val().pass === pass) {
                 localStorage.setItem('user', JSON.stringify(snap.val()));
                 location.reload();
-            } else { alert("Ошибка входа"); }
+            } else { 
+                alert("Неверный номер или пароль!"); 
+            }
         };
 
         function loginSuccess(u) {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('u-nick').innerText = u.nick;
             document.getElementById('u-phone').innerText = "+" + u.phone;
+            document.getElementById('u-email').innerText = u.email;
             document.getElementById('u-avatar').src = u.avatar;
-            if(u.phone === "79149689313") document.getElementById('admin-tools').style.display = 'block';
+            
+            // Проверка на админа (авторский номер)
+            if(u.phone === "79149689313") {
+                document.getElementById('admin-tools').style.display = 'block';
+            }
         }
 
         window.logout = () => { localStorage.clear(); location.reload(); };
@@ -174,33 +192,55 @@
             document.getElementById('view-' + id).classList.add('active');
         };
 
-        // ЧАТЫ
+        // ОБЩИЙ ЧАТ
         window.sendForum = () => {
             const i = document.getElementById('forum-input');
-            push(ref(db, 'forum'), { user: user.nick, text: i.value });
+            if(!i.value.trim()) return;
+            push(ref(db, 'forum'), { 
+                user: user.nick, 
+                text: i.value,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
             i.value = '';
         };
+
         onChildAdded(ref(db, 'forum'), s => {
             const d = s.val();
             const box = document.getElementById('forum-msgs');
-            box.innerHTML += `<div class="bubble ${d.user === user.nick ? 'my' : 'other'}"><b>${d.user}</b><br>${d.text}</div>`;
+            const isMy = user && d.user === user.nick;
+            box.innerHTML += `
+                <div class="bubble ${isMy ? 'my' : 'other'}">
+                    <b style="font-size:0.8rem; color:var(--accent)">${d.user}</b><br>
+                    ${d.text}
+                </div>`;
             box.scrollTop = box.scrollHeight;
         });
 
-        // ПАСТЫРЬ
+        // ПОСТЫ ПАСТЫРЯ (ОГРАНИЧЕННЫЙ ДОСТУП)
         window.sendPastorPost = () => {
             const txt = document.getElementById('pastor-txt').value;
             const img = document.getElementById('pastor-img').value;
+            if(!txt) return;
             push(ref(db, 'pastor_posts'), { text: txt, imgUrl: img });
+            document.getElementById('pastor-txt').value = '';
         };
+
         onChildAdded(ref(db, 'pastor_posts'), s => {
             const p = s.val();
-            document.getElementById('pastor-feed').insertAdjacentHTML('afterbegin', `<div style="background:var(--card); padding:15px; border-radius:10px; margin-bottom:15px;">${p.imgUrl ? `<img src="${p.imgUrl}" style="width:100%;">` : ''}<p>${p.text}</p></div>`);
+            document.getElementById('pastor-feed').insertAdjacentHTML('afterbegin', `
+                <div style="background:var(--card); padding:20px; border-radius:12px; margin-bottom:15px; border-left:4px solid var(--accent);">
+                    ${p.imgUrl ? `<img src="${p.imgUrl}" style="width:100%; border-radius:8px; margin-bottom:10px;">` : ''}
+                    <p style="margin:0;">${p.text}</p>
+                </div>`);
         });
 
         window.updateAvatar = () => {
             const url = document.getElementById('new-avatar').value;
+            if(!url) return;
             update(ref(db, 'users/' + user.phone), { avatar: url });
+            // Обновляем локально
+            user.avatar = url;
+            localStorage.setItem('user', JSON.stringify(user));
             location.reload();
         };
     </script>
