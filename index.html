@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>A BIG FAMILY | Network</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        :root { --bg: #0b111b; --card: #161f2c; --accent: #00d2ff; --text: #e0e6ed; --border: #2d3748; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow: hidden; }
+        #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: var(--card); padding: 40px; border-radius: 20px; text-align: center; width: 320px; border: 1px solid var(--border); }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #161f2c; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border); }
+        .nav-btn { background: none; border: none; color: #94a3b8; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 0.8rem; }
+        .nav-btn.active { color: var(--accent); }
+        main { height: calc(100vh - 70px); overflow-y: auto; padding: 20px; max-width: 500px; margin: 0 auto; }
+        .tab-content { display: none; } .tab-content.active { display: block; }
+        .glass-card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .chat-area { height: 400px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .bubble { padding: 10px 14px; border-radius: 15px; max-width: 80%; font-size: 0.95rem; line-height: 1.4; }
+        .bubble.my { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 2px; }
+        .bubble.other { align-self: flex-start; background: var(--border); border-bottom-left-radius: 2px; }
+        input, textarea { width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 10px; }
+        .btn-main { background: var(--accent); color: #000; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-screen">
+        <div class="auth-card">
+            <h1>A BIG FAMILY</h1>
+            <input type="text" id="user-login" placeholder="Ваше имя">
+            <button class="btn-main" style="width:100%; margin-top:15px;" onclick="createAccount()">Войти</button>
+        </div>
+    </div>
+
+    <main>
+        <div id="main-tab" class="tab-content active">
+            <div class="glass-card">
+                <strong>Pastor Official</strong>
+                <div style="height:250px; background:#000; margin:15px 0; border-radius:12px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-play fa-3x"></i></div>
+                <p>Единство в каждом байте. Добро пожаловать.</p>
+            </div>
+        </div>
+
+        <div id="public-tab" class="tab-content">
+            <div id="chat-list">
+                <h3>Публичные чаты</h3>
+                <div class="glass-card" onclick="openChat('Общий зал')">🌍 Общий зал</div>
+                <div class="glass-card" onclick="openChat('Молитва')">🙏 Молитва</div>
+            </div>
+            <div id="chat-ui" style="display:none;">
+                <div class="chat-area" id="pub-msgs"></div>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <input type="text" id="pub-input" placeholder="Сообщение...">
+                    <button class="btn-main" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div id="anon-tab" class="tab-content">
+            <div id="anon-setup">
+                <h3>Анонимный чат</h3>
+                <input type="text" id="anon-key" placeholder="Ключ комнаты">
+                <button class="btn-main" style="width:100%; margin-top:10px;" onclick="startAnon()">Создать канал</button>
+            </div>
+            <div id="anon-ui" style="display:none;">
+                <div class="chat-area" id="anon-msgs"></div>
+                <input type="text" id="anon-input" placeholder="Шифрованный текст...">
+                <button class="btn-main" style="width:100%; margin-top:10px;" onclick="sendAnon()">ОТПРАВИТЬ</button>
+            </div>
+        </div>
+
+        <div id="community-tab" class="tab-content">
+            <div class="glass-card">
+                <textarea id="comm-text" placeholder="О чем вы думаете?"></textarea>
+                <button class="btn-main" style="margin-top:10px;" onclick="postComm()">Поделиться</button>
+            </div>
+            <div id="comm-feed"></div>
+        </div>
+    </main>
+
+    <nav class="nav-bar">
+        <button class="nav-btn active" onclick="showTab('main-tab')"><i class="fas fa-home"></i> Дом</button>
+        <button class="nav-btn" onclick="showTab('public-tab')"><i class="fas fa-comment"></i> Чаты</button>
+        <button class="nav-btn" onclick="showTab('anon-tab')"><i class="fas fa-user-secret"></i> Anon</button>
+        <button class="nav-btn" onclick="showTab('community-tab')"><i class="fas fa-users"></i> Мир</button>
+    </nav>
+
+    <script>
+        const socket = io();
+        let myUser = localStorage.getItem('user') || "";
+        let currentRoom = "";
+
+        if(myUser) document.getElementById('auth-screen').style.display = 'none';
+
+        function createAccount() {
+            const val = document.getElementById('user-login').value;
+            if(!val) return;
+            myUser = val;
+            localStorage.setItem('user', val);
+            document.getElementById('auth-screen').style.display = 'none';
+        }
+
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.currentTarget.classList.add('active');
+            if(id === 'community-tab') socket.emit('get_posts');
+        }
+
+        function openChat(room) {
+            currentRoom = room;
+            document.getElementById('chat-list').style.display = 'none';
+            document.getElementById('chat-ui').style.display = 'block';
+            socket.emit('join', {room: room, username: myUser});
+        }
+
+        function startAnon() {
+            const key = document.getElementById('anon-key').value;
+            if(!key) return;
+            currentRoom = key;
+            document.getElementById('anon-setup').style.display = 'none';
+            document.getElementById('anon-ui').style.display = 'block';
+            socket.emit('join', {room: key, username: myUser});
+        }
+
+        function sendMsg() {
+            const m = document.getElementById('pub-input').value;
+            if(m) {
+                socket.emit('send_msg', {room: currentRoom, msg: m, user: myUser});
+                document.getElementById('pub-input').value = '';
+            }
+        }
+
+        socket.on('chat_history', (msgs) => {
+            const box = document.querySelector('.tab-content.active .chat-area');
+            box.innerHTML = '';
+            msgs.forEach(m => renderMsg(m, box));
+        });
+
+        socket.on('msg_receive', (data) => {
+            const box = document.querySelector('.tab-content.active .chat-area');
+            if(data.room === currentRoom) renderMsg(data, box);
+        });
+
+        function renderMsg(data, box) {
+            const side = data.user === myUser ? 'my' : 'other';
+            box.innerHTML += `<div class="bubble ${side}"><strong>${data.user}</strong><br>${data.msg}<br><small style="opacity:0.5; font-size:0.7rem">${data.timestamp}</small></div>`;
+            box.scrollTop = box.scrollHeight;
+        }
+
+        socket.on('posts_history', (posts) => {
+            const feed = document.getElementById('comm-feed');
+            feed.innerHTML = '';
+            posts.forEach(p => feed.innerHTML += `<div class="glass-card"><strong>${p.user}</strong> <small>${p.timestamp}</small><p>${p.text}</p></div>`);
+        });
+
+        function postComm() {
+            const txt = document.getElementById('comm-text').value;
+            if(txt) socket.emit('new_post', {user: myUser, text: txt});
+            document.getElementById('comm-text').value = '';
+        }
+    </script>
+</body>
+</html>
