@@ -2,108 +2,141 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>A BIG FAMILY</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A BIG FAMILY | Network</title>
     <style>
         :root {
-            --bg-color: #0e1621;
-            --header-color: #17212b;
-            --my-msg: #2b5278;
-            --other-msg: #182533;
+            --bg: #1a1a1a;
+            --card: #333333;
             --accent: #4eb1f3;
-            --text: #ffffff;
+            --text: #e0e0e0;
         }
 
-        body, html { 
-            margin: 0; padding: 0; height: 100%; 
-            background: var(--bg-color); color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            overflow: hidden;
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
         }
 
-        /* Экран входа */
-        #auth-screen {
-            position: fixed; inset: 0; background: var(--bg-color);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 1000;
-        }
-        .auth-input {
-            background: #1d2a39; border: 1px solid var(--accent);
-            color: white; padding: 12px; border-radius: 8px; width: 250px; text-align: center;
-            font-size: 1rem; outline: none;
+        /* ОСНОВНАЯ СЕТКА (КАК НА ФОТО) */
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 300px; /* Лента и Меню */
+            width: 100%;
+            gap: 2px;
         }
 
-        /* Шапка */
-        .header {
-            height: 56px; background: var(--header-color);
-            display: flex; align-items: center; padding: 0 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            position: relative; z-index: 10;
+        /* ЛЕВАЯ ЧАСТЬ - ЛЕНТА ПАСТЫРЯ */
+        .feed {
+            overflow-y: auto;
+            padding: 20px;
+            background: #222;
         }
 
-        /* Зона сообщений */
-        #chat-container {
-            height: calc(100vh - 120px);
-            overflow-y: auto; display: flex; flex-direction: column;
-            padding: 10px 15px; gap: 8px;
-            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
-            background-size: cover;
+        .pastor-post {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        .bubble {
-            padding: 8px 12px; border-radius: 15px;
-            max-width: 85%; position: relative;
-            font-size: 0.95rem; line-height: 1.3;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        .avatar {
+            width: 50px; height: 50px;
+            background: #555; border-radius: 50%;
+            margin-bottom: 10px;
         }
-        .my { align-self: flex-end; background: var(--my-msg); border-bottom-right-radius: 4px; }
-        .other { align-self: flex-start; background: var(--other-msg); border-bottom-left-radius: 4px; }
 
-        .author { color: var(--accent); font-size: 0.8rem; font-weight: bold; margin-bottom: 2px; }
-        .time { font-size: 0.7rem; opacity: 0.6; text-align: right; margin-top: 4px; }
+        .post-img {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin: 10px 0;
+            background: #111;
+        }
 
-        /* Панель ввода */
-        .input-bar {
-            height: 64px; background: var(--header-color);
-            display: flex; align-items: center; padding: 0 10px;
-            position: fixed; bottom: 0; width: 100%; box-sizing: border-box;
+        /* ПРАВАЯ ЧАСТЬ - МЕНЮ */
+        .sidebar {
+            background: #2a2a2a;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 15px;
         }
-        #msg-input {
-            flex: 1; background: transparent; border: none;
-            color: white; padding: 10px; font-size: 1rem; outline: none;
+
+        .menu-item {
+            background: #3d3d3d;
+            padding: 15px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: left;
+            text-transform: lowercase;
+            font-size: 1.1rem;
+            color: #aaa;
+            border: none;
         }
-        .send-btn { color: var(--accent); font-weight: bold; cursor: pointer; padding: 10px; }
+
+        .menu-item:hover { background: #444; color: #fff; }
+        .menu-item.active { background: #4eb1f3; color: #000; font-weight: bold; }
+
+        /* МОБИЛЬНАЯ АДАПТАЦИЯ */
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+            .sidebar {
+                position: fixed; bottom: 0; width: 100%;
+                flex-direction: row; height: 60px;
+                padding: 0; gap: 0; overflow-x: auto;
+            }
+            .menu-item {
+                flex: 1; border-radius: 0; font-size: 0.7rem;
+                padding: 10px 5px; text-align: center;
+            }
+            .feed { height: calc(100vh - 60px); }
+        }
+
+        /* СКРЫТЫЕ ОКНА (ЧАТЫ И Т.Д.) */
+        .modal-content { display: none; }
+        .modal-content.active { display: block; }
     </style>
 </head>
 <body>
 
-    <div id="auth-screen">
-        <h2 style="margin-bottom: 20px;">A BIG FAMILY</h2>
-        <input type="text" id="username" class="auth-input" placeholder="Введите ваше имя...">
-        <button onclick="startApp()" style="margin-top:20px; background: var(--accent); border:none; padding:10px 30px; border-radius:8px; color:white; font-weight:bold;">ВОЙТИ</button>
-    </div>
+    <div class="container">
+        <div class="feed" id="main-feed">
+            <div class="pastor-post">
+                <div class="avatar"></div>
+                <div style="font-weight: bold; color: var(--accent);">Пастырь</div>
+                <img src="https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=500" class="post-img">
+                <p>Добро пожаловать в нашу цифровую обитель. Здесь только важные мысли и URL-фотографии.</p>
+                <small style="opacity: 0.5;">Сегодня, 12:00</small>
+            </div>
+            
+            <div id="dynamic-content" class="modal-content">
+                <h2 id="view-title"></h2>
+                <div id="view-body"></div>
+            </div>
+        </div>
 
-    <div class="header">
-        <div style="width: 40px; height: 40px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">B</div>
-        <div style="margin-left: 15px;">
-            <div style="font-size: 1rem; font-weight: bold;">A BIG FAMILY</div>
-            <div style="font-size: 0.75rem; color: var(--accent);">онлайн</div>
+        <div class="sidebar">
+            <button class="menu-item active" onclick="showView('home')">чаты</button>
+            <button class="menu-item" onclick="showView('anon')">анонимные чаты</button>
+            <button class="menu-item" onclick="showView('community')">сообщество</button>
+            <button class="menu-item" onclick="showView('account')">аккаунт</button>
+            <button class="menu-item" onclick="showView('profile')">профиль</button>
+            <button class="menu-item" onclick="showView('donate')">донат</button>
         </div>
     </div>
 
-    <div id="chat-container"></div>
-
-    <div class="input-bar">
-        <input type="text" id="msg-input" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') sendMessage()">
-        <div class="send-btn" onclick="sendMessage()">ОТПРАВИТЬ</div>
-    </div>
-
     <script type="module">
+        // ТУТ ТВОЯ ЛОГИКА FIREBASE (как в прошлом сообщении)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, set, onChildAdded, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // Твои конфиги
         const firebaseConfig = {
             apiKey: "AIzaSyB7kRyiPzIAACu2RbUhl02oHdOVU8rltx8",
             authDomain: "bigfamily-9c7c9.firebaseapp.com",
@@ -116,49 +149,34 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const messagesRef = ref(db, 'chat_messages');
 
-        let currentUser = localStorage.getItem('chat_user') || "";
+        // Переключение вкладок
+        window.showView = (view) => {
+            const feed = document.getElementById('main-feed');
+            const items = document.querySelectorAll('.menu-item');
+            
+            items.forEach(i => i.classList.remove('active'));
+            event.target.classList.add('active');
 
-        window.startApp = () => {
-            const name = document.getElementById('username').value;
-            if(name) {
-                localStorage.setItem('chat_user', name);
-                location.reload();
-            }
+            // Если кликаем не на главную, можно подгружать чаты поверх или вместо ленты
+            console.log("Переход в раздел:", view);
         };
 
-        if(currentUser) {
-            document.getElementById('auth-screen').style.display = 'none';
-        }
-
-        window.sendMessage = () => {
-            const input = document.getElementById('msg-input');
-            if(!input.value.trim()) return;
-
-            const newMsgRef = push(messagesRef);
-            set(newMsgRef, {
-                user: currentUser,
-                text: input.value,
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-            });
-            input.value = '';
-        };
-
-        // Слушаем новые сообщения (Realtime)
-        onChildAdded(messagesRef, (data) => {
-            const msg = data.val();
-            const container = document.getElementById('chat-container');
-            const isMy = msg.user === currentUser;
-
-            container.innerHTML += `
-                <div class="bubble ${isMy ? 'my' : 'other'}">
-                    ${!isMy ? `<div class="author">${msg.user}</div>` : ''}
-                    <div>${msg.text}</div>
-                    <div class="time">${msg.time}</div>
-                </div>
-            `;
-            container.scrollTop = container.scrollHeight;
+        // Загрузка постов пастыря из БД (только чтение)
+        const pastorRef = ref(db, 'pastor_posts');
+        onChildAdded(pastorRef, (snapshot) => {
+            const post = snapshot.val();
+            const feed = document.getElementById('main-feed');
+            // Добавляем новые посты наверх
+            const postHtml = `
+                <div class="pastor-post">
+                    <div class="avatar"></div>
+                    <div style="font-weight: bold; color: var(--accent);">Пастырь</div>
+                    ${post.imgUrl ? `<img src="${post.imgUrl}" class="post-img">` : ''}
+                    <p>${post.text}</p>
+                    <small style="opacity: 0.5;">${post.time}</small>
+                </div>`;
+            feed.insertAdjacentHTML('afterbegin', postHtml);
         });
     </script>
 </body>
