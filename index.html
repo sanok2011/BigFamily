@@ -2,166 +2,164 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>A BIG FAMILY | Network</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A BIG FAMILY</title>
+    
     <style>
-        :root { --bg: #0b111b; --card: #161f2c; --accent: #00d2ff; --text: #e0e6ed; --border: #2d3748; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow: hidden; }
-        #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; }
-        .auth-card { background: var(--card); padding: 40px; border-radius: 20px; text-align: center; width: 320px; border: 1px solid var(--border); }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #161f2c; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border); }
-        .nav-btn { background: none; border: none; color: #94a3b8; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 0.8rem; }
-        .nav-btn.active { color: var(--accent); }
-        main { height: calc(100vh - 70px); overflow-y: auto; padding: 20px; max-width: 500px; margin: 0 auto; }
-        .tab-content { display: none; } .tab-content.active { display: block; }
-        .glass-card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid var(--border); }
-        .chat-area { height: 400px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .bubble { padding: 10px 14px; border-radius: 15px; max-width: 80%; font-size: 0.95rem; line-height: 1.4; }
-        .bubble.my { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 2px; }
-        .bubble.other { align-self: flex-start; background: var(--border); border-bottom-left-radius: 2px; }
-        input, textarea { width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 10px; }
-        .btn-main { background: var(--accent); color: #000; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        :root {
+            --bg-color: #0e1621;
+            --header-color: #17212b;
+            --my-msg: #2b5278;
+            --other-msg: #182533;
+            --accent: #4eb1f3;
+            --text: #ffffff;
+        }
+
+        body, html { 
+            margin: 0; padding: 0; height: 100%; 
+            background: var(--bg-color); color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Экран входа */
+        #auth-screen {
+            position: fixed; inset: 0; background: var(--bg-color);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1000;
+        }
+        .auth-input {
+            background: #1d2a39; border: 1px solid var(--accent);
+            color: white; padding: 12px; border-radius: 8px; width: 250px; text-align: center;
+            font-size: 1rem; outline: none;
+        }
+
+        /* Шапка */
+        .header {
+            height: 56px; background: var(--header-color);
+            display: flex; align-items: center; padding: 0 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: relative; z-index: 10;
+        }
+
+        /* Зона сообщений */
+        #chat-container {
+            height: calc(100vh - 120px);
+            overflow-y: auto; display: flex; flex-direction: column;
+            padding: 10px 15px; gap: 8px;
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+            background-size: cover;
+        }
+
+        .bubble {
+            padding: 8px 12px; border-radius: 15px;
+            max-width: 85%; position: relative;
+            font-size: 0.95rem; line-height: 1.3;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .my { align-self: flex-end; background: var(--my-msg); border-bottom-right-radius: 4px; }
+        .other { align-self: flex-start; background: var(--other-msg); border-bottom-left-radius: 4px; }
+
+        .author { color: var(--accent); font-size: 0.8rem; font-weight: bold; margin-bottom: 2px; }
+        .time { font-size: 0.7rem; opacity: 0.6; text-align: right; margin-top: 4px; }
+
+        /* Панель ввода */
+        .input-bar {
+            height: 64px; background: var(--header-color);
+            display: flex; align-items: center; padding: 0 10px;
+            position: fixed; bottom: 0; width: 100%; box-sizing: border-box;
+        }
+        #msg-input {
+            flex: 1; background: transparent; border: none;
+            color: white; padding: 10px; font-size: 1rem; outline: none;
+        }
+        .send-btn { color: var(--accent); font-weight: bold; cursor: pointer; padding: 10px; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen">
-        <div class="auth-card">
-            <h1>A BIG FAMILY</h1>
-            <input type="text" id="user-login" placeholder="Ваше имя">
-            <button class="btn-main" style="width:100%; margin-top:15px;" onclick="createAccount()">Войти</button>
+        <h2 style="margin-bottom: 20px;">A BIG FAMILY</h2>
+        <input type="text" id="username" class="auth-input" placeholder="Введите ваше имя...">
+        <button onclick="startApp()" style="margin-top:20px; background: var(--accent); border:none; padding:10px 30px; border-radius:8px; color:white; font-weight:bold;">ВОЙТИ</button>
+    </div>
+
+    <div class="header">
+        <div style="width: 40px; height: 40px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">B</div>
+        <div style="margin-left: 15px;">
+            <div style="font-size: 1rem; font-weight: bold;">A BIG FAMILY</div>
+            <div style="font-size: 0.75rem; color: var(--accent);">онлайн</div>
         </div>
     </div>
 
-    <main>
-        <div id="main-tab" class="tab-content active">
-            <div class="glass-card">
-                <strong>Pastor Official</strong>
-                <div style="height:250px; background:#000; margin:15px 0; border-radius:12px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-play fa-3x"></i></div>
-                <p>Единство в каждом байте. Добро пожаловать.</p>
-            </div>
-        </div>
+    <div id="chat-container"></div>
 
-        <div id="public-tab" class="tab-content">
-            <div id="chat-list">
-                <h3>Публичные чаты</h3>
-                <div class="glass-card" onclick="openChat('Общий зал')">🌍 Общий зал</div>
-                <div class="glass-card" onclick="openChat('Молитва')">🙏 Молитва</div>
-            </div>
-            <div id="chat-ui" style="display:none;">
-                <div class="chat-area" id="pub-msgs"></div>
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <input type="text" id="pub-input" placeholder="Сообщение...">
-                    <button class="btn-main" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
-                </div>
-            </div>
-        </div>
+    <div class="input-bar">
+        <input type="text" id="msg-input" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') sendMessage()">
+        <div class="send-btn" onclick="sendMessage()">ОТПРАВИТЬ</div>
+    </div>
 
-        <div id="anon-tab" class="tab-content">
-            <div id="anon-setup">
-                <h3>Анонимный чат</h3>
-                <input type="text" id="anon-key" placeholder="Ключ комнаты">
-                <button class="btn-main" style="width:100%; margin-top:10px;" onclick="startAnon()">Создать канал</button>
-            </div>
-            <div id="anon-ui" style="display:none;">
-                <div class="chat-area" id="anon-msgs"></div>
-                <input type="text" id="anon-input" placeholder="Шифрованный текст...">
-                <button class="btn-main" style="width:100%; margin-top:10px;" onclick="sendAnon()">ОТПРАВИТЬ</button>
-            </div>
-        </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, set, onChildAdded, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        <div id="community-tab" class="tab-content">
-            <div class="glass-card">
-                <textarea id="comm-text" placeholder="О чем вы думаете?"></textarea>
-                <button class="btn-main" style="margin-top:10px;" onclick="postComm()">Поделиться</button>
-            </div>
-            <div id="comm-feed"></div>
-        </div>
-    </main>
+        // Твои конфиги
+        const firebaseConfig = {
+            apiKey: "AIzaSyB7kRyiPzIAACu2RbUhl02oHdOVU8rltx8",
+            authDomain: "bigfamily-9c7c9.firebaseapp.com",
+            databaseURL: "https://bigfamily-9c7c9-default-rtdb.firebaseio.com",
+            projectId: "bigfamily-9c7c9",
+            storageBucket: "bigfamily-9c7c9.firebasestorage.app",
+            messagingSenderId: "335887032766",
+            appId: "1:335887032766:web:0767c05060af85723799ef"
+        };
 
-    <nav class="nav-bar">
-        <button class="nav-btn active" onclick="showTab('main-tab')"><i class="fas fa-home"></i> Дом</button>
-        <button class="nav-btn" onclick="showTab('public-tab')"><i class="fas fa-comment"></i> Чаты</button>
-        <button class="nav-btn" onclick="showTab('anon-tab')"><i class="fas fa-user-secret"></i> Anon</button>
-        <button class="nav-btn" onclick="showTab('community-tab')"><i class="fas fa-users"></i> Мир</button>
-    </nav>
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const messagesRef = ref(db, 'chat_messages');
 
-    <script>
-        const socket = io();
-        let myUser = localStorage.getItem('user') || "";
-        let currentRoom = "";
+        let currentUser = localStorage.getItem('chat_user') || "";
 
-        if(myUser) document.getElementById('auth-screen').style.display = 'none';
+        window.startApp = () => {
+            const name = document.getElementById('username').value;
+            if(name) {
+                localStorage.setItem('chat_user', name);
+                location.reload();
+            }
+        };
 
-        function createAccount() {
-            const val = document.getElementById('user-login').value;
-            if(!val) return;
-            myUser = val;
-            localStorage.setItem('user', val);
+        if(currentUser) {
             document.getElementById('auth-screen').style.display = 'none';
         }
 
-        function showTab(id) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            event.currentTarget.classList.add('active');
-            if(id === 'community-tab') socket.emit('get_posts');
-        }
+        window.sendMessage = () => {
+            const input = document.getElementById('msg-input');
+            if(!input.value.trim()) return;
 
-        function openChat(room) {
-            currentRoom = room;
-            document.getElementById('chat-list').style.display = 'none';
-            document.getElementById('chat-ui').style.display = 'block';
-            socket.emit('join', {room: room, username: myUser});
-        }
+            const newMsgRef = push(messagesRef);
+            set(newMsgRef, {
+                user: currentUser,
+                text: input.value,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+            input.value = '';
+        };
 
-        function startAnon() {
-            const key = document.getElementById('anon-key').value;
-            if(!key) return;
-            currentRoom = key;
-            document.getElementById('anon-setup').style.display = 'none';
-            document.getElementById('anon-ui').style.display = 'block';
-            socket.emit('join', {room: key, username: myUser});
-        }
+        // Слушаем новые сообщения (Realtime)
+        onChildAdded(messagesRef, (data) => {
+            const msg = data.val();
+            const container = document.getElementById('chat-container');
+            const isMy = msg.user === currentUser;
 
-        function sendMsg() {
-            const m = document.getElementById('pub-input').value;
-            if(m) {
-                socket.emit('send_msg', {room: currentRoom, msg: m, user: myUser});
-                document.getElementById('pub-input').value = '';
-            }
-        }
-
-        socket.on('chat_history', (msgs) => {
-            const box = document.querySelector('.tab-content.active .chat-area');
-            box.innerHTML = '';
-            msgs.forEach(m => renderMsg(m, box));
+            container.innerHTML += `
+                <div class="bubble ${isMy ? 'my' : 'other'}">
+                    ${!isMy ? `<div class="author">${msg.user}</div>` : ''}
+                    <div>${msg.text}</div>
+                    <div class="time">${msg.time}</div>
+                </div>
+            `;
+            container.scrollTop = container.scrollHeight;
         });
-
-        socket.on('msg_receive', (data) => {
-            const box = document.querySelector('.tab-content.active .chat-area');
-            if(data.room === currentRoom) renderMsg(data, box);
-        });
-
-        function renderMsg(data, box) {
-            const side = data.user === myUser ? 'my' : 'other';
-            box.innerHTML += `<div class="bubble ${side}"><strong>${data.user}</strong><br>${data.msg}<br><small style="opacity:0.5; font-size:0.7rem">${data.timestamp}</small></div>`;
-            box.scrollTop = box.scrollHeight;
-        }
-
-        socket.on('posts_history', (posts) => {
-            const feed = document.getElementById('comm-feed');
-            feed.innerHTML = '';
-            posts.forEach(p => feed.innerHTML += `<div class="glass-card"><strong>${p.user}</strong> <small>${p.timestamp}</small><p>${p.text}</p></div>`);
-        });
-
-        function postComm() {
-            const txt = document.getElementById('comm-text').value;
-            if(txt) socket.emit('new_post', {user: myUser, text: txt});
-            document.getElementById('comm-text').value = '';
-        }
     </script>
 </body>
 </html>
