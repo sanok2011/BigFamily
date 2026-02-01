@@ -5,112 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>A BIG FAMILY | Network</title>
     <style>
-        :root {
-            --bg: #1a1a1a;
-            --card: #2a2a2a;
-            --accent: #4eb1f3;
-            --text: #e0e0e0;
-            --sidebar-w: 280px;
-        }
-
+        :root { --bg: #1a1a1a; --card: #2a2a2a; --accent: #4eb1f3; --text: #e0e0e0; --sidebar-w: 280px; }
         body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; }
-
         .container { display: grid; grid-template-columns: 1fr var(--sidebar-w); width: 100%; height: 100vh; }
+        
+        /* КОНТЕНТ */
+        .content-area { overflow-y: auto; background: #222; position: relative; }
+        .view-section { display: none; height: 100%; animation: fadeIn 0.3s; }
+        .view-section.active { display: flex; flex-direction: column; }
 
-        /* ЛЕВАЯ КОЛОНКА - КОНТЕНТ */
-        .content-area { overflow-y: auto; background: #222; position: relative; padding-bottom: 80px; }
-
-        .view-section { display: none; padding: 20px; animation: fadeIn 0.3s; }
-        .view-section.active { display: block; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* ПОСТ ПАСТЫРЯ */
-        .pastor-post { background: var(--card); border-radius: 8px; padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--accent); }
-        .post-img { width: 100%; max-height: 450px; object-fit: cover; border-radius: 4px; margin: 10px 0; background: #111; }
-
-        /* ПРАВАЯ КОЛОНКА - МЕНЮ */
-        .sidebar { background: #111; display: flex; flex-direction: column; padding: 20px; gap: 12px; border-left: 1px solid #333; }
-
-        .menu-item {
-            background: #222; padding: 18px; border-radius: 6px; cursor: pointer;
-            transition: 0.2s; text-align: left; text-transform: lowercase;
-            font-size: 1.1rem; color: #888; border: 1px solid transparent;
-        }
-
-        .menu-item:hover { background: #282828; color: #fff; }
-        .menu-item.active { background: #2b5278; color: #fff; border-color: var(--accent); }
-
-        /* ЧАТЫ (Внутри вкладок) */
-        .chat-wrap { display: flex; flex-direction: column; height: 70vh; background: #1a1a1a; border-radius: 8px; overflow: hidden; }
+        /* АНОНИМНЫЕ ЧАТЫ (ДВЕ ПАНЕЛИ) */
+        .anon-layout { display: grid; grid-template-columns: 250px 1fr; height: 100%; }
+        .friends-list { background: #151515; border-right: 1px solid #333; padding: 10px; overflow-y: auto; }
+        .friend-item { padding: 12px; background: #222; margin-bottom: 5px; border-radius: 5px; cursor: pointer; font-size: 0.9rem; }
+        .friend-item:hover { background: #333; }
+        
+        /* ЧАТ */
+        .chat-wrap { display: flex; flex-direction: column; flex: 1; background: #1a1a1a; }
         .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
         .input-wrap { padding: 15px; background: #222; display: flex; gap: 10px; }
         input { flex: 1; background: #333; border: none; padding: 12px; color: white; border-radius: 4px; outline: none; }
         
-        .bubble { padding: 8px 12px; border-radius: 10px; max-width: 80%; font-size: 0.9rem; }
+        .bubble { padding: 8px 12px; border-radius: 10px; max-width: 80%; font-size: 0.9rem; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         .my { align-self: flex-end; background: #2b5278; }
         .other { align-self: flex-start; background: #333; }
 
-        /* МОБИЛКИ */
+        /* МЕНЮ */
+        .sidebar { background: #111; display: flex; flex-direction: column; padding: 20px; gap: 12px; border-left: 1px solid #333; }
+        .menu-item { background: #222; padding: 18px; border-radius: 4px; cursor: pointer; border: none; color: #888; text-align: left; font-size: 1rem; }
+        .menu-item.active { background: #2b5278; color: #fff; border: 1px solid var(--accent); }
+
+        /* РЕГИСТРАЦИЯ */
+        #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @media (max-width: 768px) {
             .container { grid-template-columns: 1fr; }
-            .sidebar {
-                position: fixed; bottom: 0; width: 100%; height: 65px;
-                flex-direction: row; padding: 0; border-left: none; border-top: 1px solid #333;
-            }
-            .menu-item {
-                flex: 1; border-radius: 0; font-size: 0.65rem; padding: 0;
-                display: flex; align-items: center; justify-content: center;
-            }
+            .sidebar { position: fixed; bottom: 0; width: 100%; height: 65px; flex-direction: row; padding: 0; }
+            .anon-layout { grid-template-columns: 100px 1fr; }
             .content-area { height: calc(100vh - 65px); }
-            .sidebar-hide { display: none; }
         }
     </style>
 </head>
 <body>
 
+    <div id="auth-screen" style="display: none;">
+        <h1 style="color:var(--accent)">A BIG FAMILY</h1>
+        <p>Создайте аккаунт в братстве</p>
+        <input type="text" id="reg-nick" placeholder="Никнейм" style="width:250px; margin-bottom:10px;">
+        <button onclick="register()" style="padding:10px 40px; background:var(--accent); border:none; border-radius:5px; font-weight:bold;">СОЗДАТЬ</button>
+    </div>
+
     <div class="container">
         <div class="content-area">
-            
-            <section id="view-home" class="view-section active">
-                <div id="pastor-feed">
-                    <div class="pastor-post">
-                        <div style="font-weight: bold; color: var(--accent);">Пастырь Official</div>
-                        <p>Нажмите на "сообщество" или "анонимные чаты", чтобы начать общение.</p>
-                    </div>
-                </div>
+            <section id="view-home" class="view-section active" style="padding:20px;">
+                <div id="pastor-feed"></div>
             </section>
 
             <section id="view-anon" class="view-section">
-                <h2>Анонимный Канал</h2>
-                <div class="chat-wrap">
-                    <div class="messages" id="anon-msgs"></div>
-                    <div class="input-wrap">
-                        <input type="text" id="anon-input" placeholder="Зашифрованное сообщение...">
-                        <button onclick="sendMsg('anon')" style="background:var(--accent); border:none; padding:10px;">-></button>
+                <div class="anon-layout">
+                    <div class="friends-list">
+                        <input type="text" id="search-friend" placeholder="+ Найти друга (ник)" style="font-size:0.8rem; margin-bottom:10px;" onkeypress="if(event.key==='Enter') addFriend()">
+                        <div id="friends-container"></div>
+                    </div>
+                    <div class="chat-wrap">
+                        <div id="chat-target-name" style="padding:10px; background:#222; font-size:0.8rem; color:var(--accent)">Выберите чат</div>
+                        <div class="messages" id="private-msgs"></div>
+                        <div class="input-wrap">
+                            <input type="text" id="private-input" placeholder="Сообщение...">
+                            <button onclick="sendPrivate()" style="background:var(--accent); border:none; color:black; padding:10px 15px; border-radius:4px;">-></button>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <section id="view-community" class="view-section">
-                <h2>Общий чат Братства</h2>
-                <div class="chat-wrap">
-                    <div class="messages" id="pub-msgs"></div>
-                    <div class="input-wrap">
-                        <input type="text" id="pub-input" placeholder="Написать всем...">
-                        <button onclick="sendMsg('pub')" style="background:var(--accent); border:none; padding:10px;">-></button>
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-donate" class="view-section">
-                <h2>Поддержка Братства</h2>
-                <div class="pastor-post">
-                    <p>Ваши пожертвования идут на развитие цифровой обители.</p>
-                    <button style="width:100%; padding:15px; background:#f39c12; border:none; font-weight:bold; cursor:pointer;">ПОДДЕРЖАТЬ</button>
-                </div>
-            </section>
-
+            <section id="view-community" class="view-section" style="padding:20px;"><h2>Скоро...</h2></section>
         </div>
 
         <nav class="sidebar">
@@ -125,7 +94,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, set, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, set, onChildAdded, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB7kRyiPzIAACu2RbUhl02oHdOVU8rltx8",
@@ -139,68 +108,88 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const user = localStorage.getItem('chat_user') || "Гость_" + Math.floor(Math.random()*1000);
 
-        // Переключение вкладок (Настоящее)
+        let myNick = localStorage.getItem('chat_user');
+        let currentChatId = null;
+
+        if(!myNick) { document.getElementById('auth-screen').style.display = 'flex'; }
+
+        // Регистрация
+        window.register = () => {
+            const nick = document.getElementById('reg-nick').value.trim();
+            if(nick) {
+                set(ref(db, 'users/' + nick), { registered: true });
+                localStorage.setItem('chat_user', nick);
+                location.reload();
+            }
+        };
+
+        // Переключение вкладок
         window.switchTab = (id, el) => {
-            // Убираем активный класс у кнопок
-            document.querySelectorAll('.menu-item').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
-
-            // Скрываем все секции и показываем нужную
-            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.getElementById('view-' + id).classList.add('active');
         };
 
-        // Отправка сообщений
-        window.sendMsg = (type) => {
-            const input = document.getElementById(type + '-input');
-            if(!input.value.trim()) return;
-            
-            const msgRef = ref(db, 'messages/' + type);
-            push(msgRef, {
-                user: user,
-                text: input.value,
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-            });
-            input.value = '';
+        // Добавление друга и создание чата
+        window.addFriend = async () => {
+            const nick = document.getElementById('search-friend').value.trim();
+            const snapshot = await get(child(ref(db), `users/${nick}`));
+            if(snapshot.exists() && nick !== myNick) {
+                const chatId = [myNick, nick].sort().join("_");
+                renderFriend(nick, chatId);
+                document.getElementById('search-friend').value = '';
+            } else { alert("Пользователь не найден"); }
         };
 
-        // Получение сообщений (Общий чат)
-        onChildAdded(ref(db, 'messages/pub'), (snap) => {
-            renderBubble(snap.val(), 'pub-msgs');
-        });
+        function renderFriend(nick, chatId) {
+            const container = document.getElementById('friends-container');
+            const div = document.createElement('div');
+            div.className = 'friend-item';
+            div.innerText = nick;
+            div.onclick = () => openPrivateChat(chatId, nick);
+            container.appendChild(div);
+        }
 
-        // Получение сообщений (Анон чат)
-        onChildAdded(ref(db, 'messages/anon'), (snap) => {
-            renderBubble(snap.val(), 'anon-msgs');
-        });
+        window.openPrivateChat = (chatId, nick) => {
+            currentChatId = chatId;
+            document.getElementById('chat-target-name').innerText = "Чат с: " + nick;
+            const msgBox = document.getElementById('private-msgs');
+            msgBox.innerHTML = '';
+            
+            // Слушаем сообщения именно этого чата
+            onChildAdded(ref(db, 'direct_messages/' + chatId), (snap) => {
+                const data = snap.val();
+                const side = data.user === myNick ? 'my' : 'other';
+                msgBox.innerHTML += `<div class="bubble ${side}"><b>${data.user}</b><br>${data.text}</div>`;
+                msgBox.scrollTop = msgBox.scrollHeight;
+            });
+        };
 
-        // Получение постов ПАСТЫРЯ (Лента слева)
+        window.sendPrivate = () => {
+            if(!currentChatId) return;
+            const inp = document.getElementById('private-input');
+            if(!inp.value.trim()) return;
+
+            push(ref(db, 'direct_messages/' + currentChatId), {
+                user: myNick,
+                text: inp.value,
+                time: new Date().toLocaleTimeString()
+            });
+            inp.value = '';
+        };
+
+        // Лента пастыря
         onChildAdded(ref(db, 'pastor_posts'), (snap) => {
             const post = snap.val();
-            const feed = document.getElementById('pastor-feed');
-            const html = `
+            document.getElementById('pastor-feed').insertAdjacentHTML('afterbegin', `
                 <div class="pastor-post">
-                    <div style="font-weight: bold; color: var(--accent);">Пастырь</div>
+                    <b>Пастырь</b><br>
                     ${post.imgUrl ? `<img src="${post.imgUrl}" class="post-img">` : ''}
                     <p>${post.text}</p>
-                    <small style="opacity:0.5;">${post.time || ''}</small>
-                </div>`;
-            feed.insertAdjacentHTML('afterbegin', html);
+                </div>`);
         });
-
-        function renderBubble(data, containerId) {
-            const box = document.getElementById(containerId);
-            const isMy = data.user === user;
-            box.innerHTML += `
-                <div class="bubble ${isMy ? 'my' : 'other'}">
-                    <div style="font-size:0.7rem; color:var(--accent); font-weight:bold;">${data.user}</div>
-                    ${data.text}
-                    <div style="font-size:0.6rem; opacity:0.5; text-align:right;">${data.time}</div>
-                </div>`;
-            box.parentNode.scrollTop = box.parentNode.scrollHeight;
-        }
     </script>
 </body>
 </html>
