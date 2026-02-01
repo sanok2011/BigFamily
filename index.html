@@ -9,7 +9,7 @@
         body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; }
         .container { display: grid; grid-template-columns: 1fr var(--sidebar-w); width: 100%; height: 100vh; }
 
-        .content-area { overflow-y: auto; background: #0e1621; }
+        .content-area { overflow-y: auto; background: #0e1621; padding-bottom: 80px; }
         .view-section { display: none; height: 100%; padding: 20px; box-sizing: border-box; flex-direction: column; }
         .view-section.active { display: flex; }
 
@@ -17,23 +17,24 @@
         .menu-item { background: #242f3d; padding: 15px; border-radius: 8px; cursor: pointer; border: none; color: #888; text-align: left; font-size: 1rem; transition: 0.2s; }
         .menu-item.active { background: #2b5278; color: #fff; border-left: 4px solid var(--accent); }
 
-        .chat-wrap { display: flex; flex-direction: column; flex: 1; background: rgba(0,0,0,0.2); border-radius: 12px; overflow: hidden; }
+        .chat-wrap { display: flex; flex-direction: column; flex: 1; background: rgba(0,0,0,0.2); border-radius: 12px; overflow: hidden; max-height: 70vh; }
         .messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
         .input-wrap { padding: 15px; background: #17212b; display: flex; gap: 10px; }
-        input { background: #242f3d; border: 1px solid #333; padding: 12px; color: white; border-radius: 8px; outline: none; flex: 1; margin-bottom: 5px; }
+        input { background: #242f3d; border: 1px solid #333; padding: 12px; color: white; border-radius: 8px; outline: none; flex: 1; }
         .action-btn { background: var(--accent); border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; color: #000; }
 
-        .bubble { padding: 10px; border-radius: 10px; max-width: 85%; margin-bottom: 5px; }
+        .bubble { padding: 10px; border-radius: 10px; max-width: 85%; word-wrap: break-word; }
         .my { align-self: flex-end; background: #2b5278; }
         .other { align-self: flex-start; background: #182533; }
 
         #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; }
-        .auth-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; display: flex; flex-direction: column; }
+        .auth-box { background: var(--card); padding: 30px; border-radius: 15px; width: 320px; display: flex; flex-direction: column; gap: 10px; }
 
         @media (max-width: 768px) {
             .container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; bottom: 0; width: 100%; height: 70px; flex-direction: row; padding: 5px; border-top: 1px solid #000; z-index: 100; }
-            .menu-item { flex: 1; font-size: 0.6rem; padding: 5px; text-align: center; }
+            .menu-item { flex: 1; font-size: 0.6rem; padding: 5px; text-align: center; border-left: none; border-top: 2px solid transparent; }
+            .menu-item.active { border-top: 2px solid var(--accent); }
             .content-area { height: calc(100vh - 70px); }
         }
     </style>
@@ -42,12 +43,13 @@
 
     <div id="auth-screen">
         <div class="auth-box">
-            <h2 style="color:var(--accent); text-align:center;">A BIG FAMILY</h2>
-            <input type="email" id="auth-email" placeholder="Email (для входа)">
+            <h2 style="color:var(--accent); text-align:center; margin:0;">A BIG FAMILY</h2>
+            <p style="text-align:center; opacity:0.6; font-size:0.8rem;">Вход или Регистрация</p>
+            <input type="email" id="auth-email" placeholder="Email">
             <input type="password" id="auth-pass" placeholder="Пароль">
-            <input type="text" id="auth-nick" placeholder="Никнейм (для регистрации)">
-            <button class="action-btn" onclick="appLogin()" style="margin-top:10px;">ВХОД</button>
-            <button class="action-btn" style="background:transparent; color:var(--accent); border:1px solid var(--accent); margin-top:5px;" onclick="appRegister()">РЕГИСТРАЦИЯ</button>
+            <input type="text" id="auth-nick" placeholder="Никнейм (для новых)">
+            <button class="action-btn" onclick="appLogin()">ВХОД</button>
+            <button class="action-btn" style="background:transparent; color:var(--accent); border:1px solid var(--accent);" onclick="appRegister()">РЕГИСТРАЦИЯ</button>
         </div>
     </div>
 
@@ -56,9 +58,9 @@
             <section id="view-home" class="view-section active">
                 <h2 style="color:var(--accent)">ГЛАВНАЯ</h2>
                 <div id="admin-tools" style="display:none; background: var(--card); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                    <input type="text" id="pastor-img" placeholder="URL картинки">
-                    <input type="text" id="pastor-txt" placeholder="Текст сообщения">
-                    <button class="action-btn" onclick="sendPastorPost()">ОПУБЛИКОВАТЬ</button>
+                    <input type="text" id="pastor-img" placeholder="URL картинки (необязательно)" style="margin-bottom:10px; width:90%">
+                    <textarea id="pastor-txt" placeholder="Текст сообщения..." style="width:95%; background:#242f3d; color:white; border-radius:8px; padding:10px; border:1px solid #333; height:80px;"></textarea>
+                    <button class="action-btn" onclick="sendPastorPost()" style="margin-top:10px; width:100%;">ОПУБЛИКОВАТЬ</button>
                 </div>
                 <div id="pastor-feed"></div>
             </section>
@@ -68,7 +70,7 @@
                 <div class="chat-wrap">
                     <div class="messages" id="forum-msgs"></div>
                     <div class="input-wrap">
-                        <input type="text" id="forum-input" placeholder="Написать всем...">
+                        <input type="text" id="forum-input" placeholder="Написать сообщение...">
                         <button onclick="sendForum()" class="action-btn">-></button>
                     </div>
                 </div>
@@ -76,27 +78,29 @@
 
             <section id="view-anon" class="view-section">
                 <h2>АНОНИМНЫЕ ЧАТЫ</h2>
-                <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border: 1px dashed #333; border-radius: 15px; padding: 20px; text-align:center;">
-                    <i class="fa-solid fa-user-secret" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px;"></i>
-                    <p>Тут будут твои личные переписки.<br><span style="opacity:0.5; font-size:0.8rem;">Функция поиска по нику в разработке.</span></p>
+                <div style="flex:1; border-radius:15px; overflow:hidden; background:#000; display:flex; justify-content:center; align-items:center;">
+                    <script async src="https://telegram.org/js/telegram-widget.js?22" data-telegram-login="bot_username" data-size="large" data-userpic="false" data-auth-url="https://yoursite.com"></script>
+                    <p style="opacity:0.5;">Интеграция Telegram активна</p>
                 </div>
             </section>
 
             <section id="view-profile" class="view-section">
-                <div style="text-align:center; background:var(--card); padding:30px; border-radius:15px;">
-                    <img id="u-avatar" src="" style="width:120px; height:120px; border-radius:50%; object-fit:cover; border: 2px solid var(--accent);">
-                    <h2 id="u-nick" style="margin-bottom:5px;"></h2>
-                    <p id="u-email-display" style="color:var(--accent); margin-top:0; font-size: 0.9rem; opacity: 0.8;"></p>
-                    <input type="text" id="new-avatar" placeholder="URL новой аватарки" style="margin-top:20px;">
-                    <button class="action-btn" style="margin-top:10px; width:100%;" onclick="updateAvatar()">СМЕНИТЬ АВАТАР</button>
+                <div style="text-align:center; background:var(--card); padding:40px; border-radius:20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    <img id="u-avatar" src="" style="width:150px; height:150px; border-radius:50%; object-fit:cover; border: 4px solid var(--accent); margin-bottom:15px;">
+                    <h2 id="u-nick" style="margin:0; font-size:2rem;"></h2>
+                    <p id="u-email-display" style="opacity:0.5; margin-bottom:20px;"></p>
+                    <input type="text" id="new-avatar" placeholder="Вставьте URL картинки" style="margin-bottom:10px; width:80%;">
+                    <button class="action-btn" onclick="updateAvatar()">ОБНОВИТЬ АВАТАР</button>
                 </div>
             </section>
 
             <section id="view-account" class="view-section">
-                <h2>АККАУНТ</h2>
-                <div style="background:var(--card); padding:20px; border-radius:10px;">
-                    <button class="action-btn" style="background:#e74c3c; width:100%; color:white;" onclick="logout()">ВЫЙТИ</button>
-                    <button class="action-btn" style="margin-top:10px; width:100%;" onclick="location.reload()">СМЕНИТЬ АККАУНТ</button>
+                <h2>МОЙ АККАУНТ</h2>
+                <div style="background:var(--card); padding:20px; border-radius:15px;">
+                    <div id="account-info" style="margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:10px;">
+                        </div>
+                    <button class="action-btn" style="background:#e74c3c; width:100%; color:white;" onclick="logout()">ВЫЙТИ ИЗ СИСТЕМЫ</button>
+                    <button class="action-btn" style="margin-top:10px; width:100%; background:#2b5278; color:white;" onclick="location.reload()">ВОЙТИ В ДРУГОЙ АККАУНТ</button>
                 </div>
             </section>
         </div>
@@ -129,7 +133,9 @@
         const db = getDatabase(app);
         
         let user = JSON.parse(localStorage.getItem('user'));
-        const PASTOR_EMAIL = "твой_email@mail.com"; // ЗАМЕНИ ЭТО НА СВОЮ ПОЧТУ
+        
+        // ВВЕДИ СВОЮ ПОЧТУ НИЖЕ, ЧТОБЫ ПОЛУЧИТЬ ПРАВА АВТОРА
+        const AUTHOR_EMAIL = "admin@example.com"; 
 
         if(user) { loginSuccess(user); }
 
@@ -137,18 +143,11 @@
             const email = document.getElementById('auth-email').value.trim();
             const pass = document.getElementById('auth-pass').value;
             const nick = document.getElementById('auth-nick').value.trim();
-            
             if(!email || !pass || !nick) return alert("Заполни все поля");
             
-            // Генерируем ID на основе почты (без точек)
             const userId = email.replace(/\./g, "_");
-            await set(ref(db, 'users/' + userId), { 
-                email: email, 
-                pass: pass, 
-                nick: nick, 
-                avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' 
-            });
-            alert("Зарегистрировано! Нажми ВХОД.");
+            await set(ref(db, 'users/' + userId), { email, pass, nick, avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' });
+            alert("Регистрация успешна! Теперь нажми Вход.");
         };
 
         window.appLogin = async () => {
@@ -160,18 +159,21 @@
             if(snap.exists() && snap.val().pass === pass) {
                 localStorage.setItem('user', JSON.stringify(snap.val()));
                 location.reload();
-            } else { 
-                alert("Ошибка: проверь почту и пароль"); 
-            }
+            } else { alert("Ошибка входа"); }
         };
 
         function loginSuccess(u) {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('u-nick').innerText = u.nick;
-            document.getElementById('u-email-display').innerText = u.email;
             document.getElementById('u-avatar').src = u.avatar;
+            document.getElementById('u-email-display').innerText = u.email;
+            document.getElementById('account-info').innerHTML = `
+                <p><b>Никнейм:</b> ${u.nick}</p>
+                <p><b>Email:</b> ${u.email}</p>
+                <p><b>Статус:</b> ${u.email === AUTHOR_EMAIL ? 'Автор' : 'Участник'}</p>
+            `;
             
-            if(u.email === PASTOR_EMAIL) {
+            if(u.email.toLowerCase() === AUTHOR_EMAIL.toLowerCase()) {
                 document.getElementById('admin-tools').style.display = 'block';
             }
         }
@@ -185,33 +187,39 @@
             document.getElementById('view-' + id).classList.add('active');
         };
 
+        // ЛОГИКА ФОРУМА
         window.sendForum = () => {
             const i = document.getElementById('forum-input');
             if(!i.value.trim()) return;
-            push(ref(db, 'forum'), { user: user.nick, text: i.value });
+            push(ref(db, 'forum'), { user: user.nick, text: i.value, timestamp: Date.now() });
             i.value = '';
         };
 
         onChildAdded(ref(db, 'forum'), s => {
             const d = s.val();
             const box = document.getElementById('forum-msgs');
-            box.innerHTML += `<div class="bubble ${d.user === user.nick ? 'my' : 'other'}"><b>${d.user}</b><br>${d.text}</div>`;
+            const side = d.user === user.nick ? 'my' : 'other';
+            box.innerHTML += `<div class="bubble ${side}"><b>${d.user}:</b><br>${d.text}</div>`;
             box.scrollTop = box.scrollHeight;
         });
 
+        // ЛОГИКА ГЛАВНОЙ (ПОСТЫ АВТОРА)
         window.sendPastorPost = () => {
             const txt = document.getElementById('pastor-txt').value;
             const img = document.getElementById('pastor-img').value;
-            push(ref(db, 'pastor_posts'), { text: txt, imgUrl: img });
+            if(!txt) return;
+            push(ref(db, 'pastor_posts'), { text: txt, imgUrl: img, date: new Date().toLocaleString() });
             document.getElementById('pastor-txt').value = '';
+            document.getElementById('pastor-img').value = '';
         };
 
         onChildAdded(ref(db, 'pastor_posts'), s => {
             const p = s.val();
             document.getElementById('pastor-feed').insertAdjacentHTML('afterbegin', `
-                <div style="background:var(--card); padding:15px; border-radius:10px; margin-bottom:15px;">
-                    ${p.imgUrl ? `<img src="${p.imgUrl}" style="width:100%; border-radius:8px;">` : ''}
-                    <p>${p.text}</p>
+                <div style="background:var(--card); padding:20px; border-radius:15px; margin-bottom:20px; border-left:4px solid var(--accent);">
+                    <small style="opacity:0.5">${p.date}</small>
+                    ${p.imgUrl ? `<img src="${p.imgUrl}" style="width:100%; border-radius:10px; margin:10px 0;">` : ''}
+                    <p style="font-size:1.1rem; line-height:1.5;">${p.text}</p>
                 </div>`);
         });
 
